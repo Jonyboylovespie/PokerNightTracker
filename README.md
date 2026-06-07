@@ -52,6 +52,8 @@ This will:
 
 ## Running with Systemd (Recommended for a server)
 
+> **Important:** Update `User`, `Group`, `WorkingDirectory`, and `ExecStart` below to match where your project actually lives (e.g. `/home/jony/PokerNightTracker`, not `/opt/poker`).
+
 Create a service file at `/etc/systemd/system/poker.service`:
 
 ```ini
@@ -78,6 +80,11 @@ Then:
 sudo systemctl daemon-reload
 sudo systemctl enable poker
 sudo systemctl start poker
+```
+
+If it fails with `203/EXEC`, double-check that `ExecStart` points to a real file:
+```bash
+ls -la /opt/poker/venv/bin/python   # change /opt/poker to your actual path
 ```
 
 
