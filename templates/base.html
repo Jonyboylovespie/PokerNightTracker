@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Poker Night Tracker{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .felt-green { background-color: #064e3b; }
+        .felt-dark { background-color: #022c22; }
+        .gold-accent { color: #fbbf24; }
+        .gold-bg { background-color: #fbbf24; }
+        .glass {
+            background: rgba(6, 78, 59, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(251, 191, 36, 0.15);
+        }
+        .chip-red { background: linear-gradient(135deg, #dc2626, #991b1b); }
+        .chip-blue { background: linear-gradient(135deg, #2563eb, #1e40af); }
+        .chip-black { background: linear-gradient(135deg, #1f2937, #111827); }
+        .chip-green { background: linear-gradient(135deg, #16a34a, #15803d); }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="felt-dark text-gray-100 min-h-screen">
+    {% block content %}{% endblock %}
+    {% block scripts %}{% endblock %}
+</body>
+</html>
