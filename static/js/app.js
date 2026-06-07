@@ -225,12 +225,23 @@ function closeAddNight() {
 async function submitAddNight() {
     const inputs = document.querySelectorAll('#night-inputs input[data-player-id]');
     const results = {};
+    let total = 0;
+
     inputs.forEach(input => {
         const val = input.value.trim();
+        const num = val !== '' ? parseFloat(val) : 0;
+        if (!isNaN(num)) {
+            total += num;
+        }
         if (val !== '') {
             results[input.dataset.playerId] = val;
         }
     });
+
+    if (Math.abs(total) > 0.001) {
+        alert(`The total of all amounts must equal $0.00 for a balanced night.\nCurrent total: ${total.toFixed(2)}`);
+        return;
+    }
 
     try {
         const res = await fetch('/api/nights', {
