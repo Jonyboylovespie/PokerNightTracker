@@ -24,14 +24,17 @@ A sleek, self-hosted web dashboard to track home game poker nights, inspired by 
 ## Quick Start (Ubuntu / Linux)
 
 ```bash
-# 1. Copy the example environment file and edit it
- cp .env.example .env
+# 1. Install prerequisites (python3-venv is required for the run script)
+sudo apt update && sudo apt install -y python3-venv
+
+# 2. Copy the example environment file and edit it
+cp .env.example .env
 #    (Optional: edit .env to set a custom SECRET_KEY and ADMIN_PASSWORD)
 
-# 2. Make run script executable
+# 3. Make run script executable
 chmod +x run.sh
 
-# 3. Run it
+# 4. Run it
 ./run.sh
 ```
 
