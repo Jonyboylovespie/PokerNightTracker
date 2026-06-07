@@ -6,11 +6,7 @@
 <div class="min-h-screen flex items-center justify-center px-4">
     <div class="w-full max-w-md glass rounded-2xl p-8 shadow-2xl">
         <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full chip-red mb-4 shadow-lg border-2 border-white/10">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-            </div>
+            <img src="{{ url_for('static', filename='images/image.png') }}" alt="Poker Chip" class="w-16 h-16 mb-4 shadow-lg border-2 border-white/10 rounded-full">
             <h1 class="text-2xl font-bold gold-accent tracking-wide">Poker Night Tracker</h1>
             <p class="text-emerald-200/70 text-sm mt-1">Admin Access</p>
         </div>
