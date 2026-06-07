@@ -110,9 +110,31 @@ function renderChart() {
         chartInstance.destroy();
     }
 
+    const zeroLinePlugin = {
+        id: 'zeroLine',
+        afterDraw: (chart) => {
+            const ctx = chart.ctx;
+            const yAxis = chart.scales.y;
+            const xAxis = chart.scales.x;
+            const y = yAxis.getPixelForValue(0);
+            if (y >= yAxis.top && y <= yAxis.bottom) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(xAxis.left, y);
+                ctx.lineTo(xAxis.right, y);
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = 'rgba(251, 191, 36, 0.6)'; // gold
+                ctx.setLineDash([6, 4]);
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+    };
+
     chartInstance = new Chart(ctx, {
         type: 'line',
         data: { labels, datasets },
+        plugins: [zeroLinePlugin],
         options: {
             responsive: true,
             maintainAspectRatio: false,
