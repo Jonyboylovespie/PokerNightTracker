@@ -123,7 +123,7 @@ function renderChart() {
                 ctx.moveTo(xAxis.left, y);
                 ctx.lineTo(xAxis.right, y);
                 ctx.lineWidth = 2;
-                ctx.strokeStyle = 'rgba(251, 191, 36, 0.6)'; // gold
+                ctx.strokeStyle = 'rgba(255, 0, 0, 0.6)'; // red with some transparency
                 ctx.setLineDash([6, 4]);
                 ctx.stroke();
                 ctx.restore();
