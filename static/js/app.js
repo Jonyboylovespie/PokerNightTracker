@@ -36,6 +36,7 @@ function showStatus(msg, isError = false) {
 
 function renderAll() {
     renderResultsTable();
+    renderBiggestResults();
     renderChart();
 }
 
@@ -58,14 +59,27 @@ function renderResultsTable() {
 
     // Rebuild body
     tbody.innerHTML = '';
-    (currentState.sorted_players || []).forEach(p => {
+    (currentState.sorted_players || []).forEach((p, index) => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-emerald-800/20 transition-colors';
 
         // Name cell
         const nameTd = document.createElement('td');
-        nameTd.className = 'px-6 py-3 font-medium text-white';
-        nameTd.textContent = p.name;
+        nameTd.className = 'px-6 py-3';
+
+        const playerInfo = document.createElement('div');
+        playerInfo.className = 'flex items-center gap-3';
+
+        const rank = document.createElement('span');
+        rank.className = getRankBadgeClass(index);
+        rank.textContent = index + 1;
+
+        const name = document.createElement('span');
+        name.className = 'font-medium text-white';
+        name.textContent = p.name;
+
+        playerInfo.append(rank, name);
+        nameTd.appendChild(playerInfo);
         tr.appendChild(nameTd);
 
         // Night cells
@@ -87,6 +101,74 @@ function renderResultsTable() {
         tbody.appendChild(tr);
     });
 }
+
+function renderBiggestResults() {
+    const oneNightResults = [];
+
+    (currentState.players || []).forEach(player => {
+        (currentState.nights || []).forEach(night => {
+            const rawAmount = currentState.matrix?.[player.id]?.[night.id];
+            const amount = Number(rawAmount);
+            if (rawAmount !== null && rawAmount !== undefined && Number.isFinite(amount) && amount !== 0) {
+                oneNightResults.push({ name: player.name, amount });
+            }
+        });
+    });
+
+    const winners = oneNightResults
+        .filter(result => result.amount > 0)
+        .sort((a, b) => b.amount - a.amount)
+        .slice(0, 5);
+    const losers = oneNightResults
+        .filter(result => result.amount < 0)
+        .sort((a, b) => a.amount - b.amount)
+        .slice(0, 5);
+
+    renderLeaderboard('biggest-winners', winners, 'No winning results yet', 'text-emerald-300');
+    renderLeaderboard('biggest-losers', losers, 'No losing results yet', 'text-red-300');
+}
+
+function renderLeaderboard(elementId, results, emptyMessage, amountClass) {
+    const list = document.getElementById(elementId);
+    list.innerHTML = '';
+
+    if (results.length === 0) {
+        const empty = document.createElement('li');
+        empty.className = 'text-sm text-emerald-400/50 py-2';
+        empty.textContent = emptyMessage;
+        list.appendChild(empty);
+        return;
+    }
+
+    results.forEach((result, index) => {
+        const row = document.createElement('li');
+        row.className = 'flex items-center gap-3';
+
+        const rank = document.createElement('span');
+        rank.className = getRankBadgeClass(index);
+        rank.textContent = index + 1;
+
+        const name = document.createElement('span');
+        name.className = 'min-w-0 flex-1 truncate text-sm font-medium text-white';
+        name.textContent = result.name;
+
+        const amount = document.createElement('span');
+        amount.className = `text-sm font-bold tabular-nums ${amountClass}`;
+        amount.textContent = formatMoney(result.amount);
+
+        row.append(rank, name, amount);
+        list.appendChild(row);
+    });
+}
+
+function getRankBadgeClass(index) {
+    const baseClass = 'flex items-center justify-center w-7 h-7 rounded-full border text-xs font-semibold';
+    if (index === 0) return `${baseClass} bg-yellow-400/20 border-yellow-400/70 text-yellow-300`;
+    if (index === 1) return `${baseClass} bg-slate-300/20 border-slate-300/70 text-slate-100`;
+    if (index === 2) return `${baseClass} bg-orange-700/20 border-orange-500/70 text-orange-300`;
+    return `${baseClass} bg-emerald-950/60 border-emerald-700/40 text-emerald-300`;
+}
+
 function renderChart() {
     const ctx = document.getElementById('cumulativeChart').getContext('2d');
 

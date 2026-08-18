@@ -86,6 +86,31 @@
         </div>
     </div>
 
+    <!-- Biggest Winners and Losers -->
+    <div class="glass rounded-xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-yellow-500/10 flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full chip-red"></div>
+            <h2 class="text-lg font-semibold text-white">Biggest Winners &amp; Losers</h2>
+            <span class="text-xs text-emerald-400/50 ml-auto">Largest single-night results</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-emerald-800/40">
+            <section class="p-6" aria-labelledby="biggest-winners-heading">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 id="biggest-winners-heading" class="text-base font-semibold text-emerald-200">Biggest Winners</h3>
+                    <span class="text-xs text-emerald-400/50">Top 5</span>
+                </div>
+                <ol id="biggest-winners" class="space-y-3"></ol>
+            </section>
+            <section class="p-6" aria-labelledby="biggest-losers-heading">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 id="biggest-losers-heading" class="text-base font-semibold text-red-200">Biggest Losers</h3>
+                    <span class="text-xs text-emerald-400/50">Top 5</span>
+                </div>
+                <ol id="biggest-losers" class="space-y-3"></ol>
+            </section>
+        </div>
+    </div>
+
 </main>
 
 <!-- Add Player Modal -->
