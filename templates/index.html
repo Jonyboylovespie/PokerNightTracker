@@ -26,8 +26,8 @@
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
     <!-- Action Bar -->
+    {% if session.get('user_id') %}
     <div class="glass rounded-xl p-6">
-        {% if session.get('user_id') %}
         <div class="flex flex-wrap gap-4 items-center justify-between">
             <div class="flex flex-wrap gap-3">
                 <button onclick="openAddPlayer()" class="px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-sm font-medium transition-colors border border-emerald-500/30">
@@ -42,16 +42,8 @@
             </div>
             <div id="status-msg" class="text-sm text-emerald-300/80 min-w-[120px] text-right"></div>
         </div>
-        {% else %}
-        <div class="flex items-center justify-between">
-            <p class="text-emerald-200/80 text-sm">
-                Viewing as guest. 
-                <a href="{{ url_for('login') }}" class="gold-accent underline hover:text-yellow-300">Login</a> 
-                to add players or nights.
-            </p>
-        </div>
-        {% endif %}
     </div>
+    {% endif %}
 
     <!-- Chart -->
     <div class="glass rounded-xl p-6">
