@@ -3,11 +3,52 @@ import json
 import sqlite3
 import datetime
 from functools import wraps
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, g
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
+def get_system_timezone():
+    """Return the host's timezone, preferring its IANA zone name when available."""
+    tz_from_env = os.environ.get('TZ', '').strip().lstrip(':')
+    if tz_from_env:
+        try:
+            return tz_from_env, ZoneInfo(tz_from_env)
+        except ZoneInfoNotFoundError:
+            pass
+
+    # Linux systems, including the supported Ubuntu deployment, normally expose
+    # the configured IANA timezone through /etc/localtime.
+    localtime_path = os.path.realpath('/etc/localtime')
+    zoneinfo_root = os.path.realpath('/usr/share/zoneinfo') + os.sep
+    if localtime_path.startswith(zoneinfo_root):
+        zone_name = localtime_path[len(zoneinfo_root):]
+        try:
+            return zone_name, ZoneInfo(zone_name)
+        except ZoneInfoNotFoundError:
+            pass
+
+    local_tz = datetime.datetime.now().astimezone().tzinfo or datetime.timezone.utc
+    return local_tz.tzname(None) or 'UTC', local_tz
+
+
+def resolve_timezone():
+    configured_timezone = os.environ.get('TIMEZONE', '').strip()
+    if configured_timezone:
+        try:
+            return configured_timezone, ZoneInfo(configured_timezone)
+        except ZoneInfoNotFoundError as exc:
+            raise RuntimeError(
+                f"Invalid TIMEZONE '{configured_timezone}'. Use an IANA timezone such as America/New_York."
+            ) from exc
+
+    return get_system_timezone()
+
+
+TIMEZONE_NAME, APP_TIMEZONE = resolve_timezone()
 
 app = Flask(__name__, instance_relative_config=True)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-me')
@@ -28,6 +69,24 @@ def get_db():
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA foreign_keys = ON")
     return db
+
+
+def get_entry_month(created_at):
+    """Convert a stored timestamp into a YYYY-MM key in the configured timezone."""
+    if not created_at:
+        return None
+
+    try:
+        timestamp = datetime.datetime.fromisoformat(str(created_at).strip().replace('Z', '+00:00'))
+    except (TypeError, ValueError):
+        return None
+
+    # Legacy rows were created by SQLite CURRENT_TIMESTAMP, which is UTC but
+    # has no offset marker. Treat those naive values as UTC before converting.
+    if timestamp.tzinfo is None:
+        timestamp = timestamp.replace(tzinfo=datetime.timezone.utc)
+
+    return timestamp.astimezone(APP_TIMEZONE).strftime('%Y-%m')
 
 
 def init_db():
@@ -132,6 +191,9 @@ def get_full_state():
     player_rows = [dict(p) for p in players]
     night_rows = [dict(n) for n in nights]
 
+    for night in night_rows:
+        night['entry_month'] = get_entry_month(night.get('created_at'))
+
     # Initialize matrix
     matrix = {p['id']: {n['id']: None for n in night_rows} for p in player_rows}
 
@@ -172,7 +234,9 @@ def get_full_state():
         "matrix": matrix,
         "totals": totals,
         "sorted_players": sorted_players,
-        "cumulative": cumulative
+        "cumulative": cumulative,
+        "current_month": datetime.datetime.now(APP_TIMEZONE).strftime('%Y-%m'),
+        "timezone": TIMEZONE_NAME
     }
 
 
@@ -258,7 +322,11 @@ def add_night():
     next_num = (last['max_n'] or 0) + 1
     label = f"Night {next_num}"
 
-    cursor.execute("INSERT INTO nights (night_number, label) VALUES (?, ?)", (next_num, label))
+    created_at = datetime.datetime.now(APP_TIMEZONE).isoformat(timespec='seconds')
+    cursor.execute(
+        "INSERT INTO nights (night_number, label, created_at) VALUES (?, ?, ?)",
+        (next_num, label, created_at)
+    )
     night_id = cursor.lastrowid
 
     players = cursor.execute("SELECT id FROM players").fetchall()

@@ -1,5 +1,6 @@
 let currentState = null;
 let chartInstance = null;
+let monthlyView = null;
 
 // Distinct chart colors (hex)
 const CHART_COLORS = [
@@ -37,6 +38,7 @@ function showStatus(msg, isError = false) {
 function renderAll() {
     renderResultsTable();
     renderBiggestResults();
+    renderMonthlyResults();
     renderChart();
 }
 
@@ -159,6 +161,92 @@ function renderLeaderboard(elementId, results, emptyMessage, amountClass) {
         row.append(rank, name, amount);
         list.appendChild(row);
     });
+}
+
+function monthKey(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+}
+
+function getDefaultMonthlyView() {
+    const currentMonth = currentState?.current_month;
+    if (currentMonth) {
+        const [year, month] = currentMonth.split('-').map(Number);
+        if (Number.isInteger(year) && Number.isInteger(month) && month >= 1 && month <= 12) {
+            return new Date(year, month - 1, 1);
+        }
+    }
+
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+}
+
+function getMonthlyNetResults() {
+    const players = currentState?.players || [];
+    const nights = currentState?.nights || [];
+    const selectedMonth = monthKey(monthlyView);
+    const totals = {};
+
+    players.forEach(player => {
+        totals[player.id] = 0;
+    });
+
+    nights.forEach(night => {
+        if (night.entry_month !== selectedMonth) return;
+
+        players.forEach(player => {
+            const rawAmount = currentState.matrix?.[player.id]?.[night.id];
+            if (rawAmount === null || rawAmount === undefined) return;
+
+            const amount = Number(rawAmount);
+            if (Number.isFinite(amount)) {
+                totals[player.id] += amount;
+            }
+        });
+    });
+
+    const rows = players.map(player => ({
+        name: player.name,
+        amount: totals[player.id]
+    }));
+
+    return {
+        winners: rows
+            .filter(result => result.amount > 0)
+            .sort((a, b) => b.amount - a.amount)
+            .slice(0, 5),
+        losers: rows
+            .filter(result => result.amount < 0)
+            .sort((a, b) => a.amount - b.amount)
+            .slice(0, 5)
+    };
+}
+
+function renderMonthlyResults() {
+    const monthLabel = document.getElementById('monthly-month');
+    if (!monthLabel) return;
+
+    if (!monthlyView) {
+        monthlyView = getDefaultMonthlyView();
+    }
+
+    monthLabel.textContent = monthlyView.toLocaleDateString(undefined, {
+        month: 'long',
+        year: 'numeric'
+    });
+
+    const { winners, losers } = getMonthlyNetResults();
+    renderLeaderboard('monthly-winners', winners, 'No winning results this month', 'text-emerald-300');
+    renderLeaderboard('monthly-losers', losers, 'No losing results this month', 'text-red-300');
+}
+
+function shiftMonthlyView(months) {
+    if (!monthlyView) {
+        monthlyView = getDefaultMonthlyView();
+    }
+    monthlyView = new Date(monthlyView.getFullYear(), monthlyView.getMonth() + months, 1);
+    renderMonthlyResults();
 }
 
 function getRankBadgeClass(index) {

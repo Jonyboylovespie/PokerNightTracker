@@ -30,6 +30,8 @@ sudo apt update && sudo apt install -y python3-venv
 # 2. Copy the example environment file and edit it
 cp .env.example .env
 #    (Optional: edit .env to set a custom SECRET_KEY and ADMIN_PASSWORD)
+#    (Optional: set TIMEZONE to an IANA timezone such as America/New_York;
+#     leave it blank to use the system timezone.)
 
 # 3. Make run script executable
 chmod +x run.sh
